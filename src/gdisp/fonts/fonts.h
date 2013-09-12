@@ -91,6 +91,6 @@
 #include "userfonts.h"
 #endif
 
-#ifndef GDISP_FONT_FOUND
+#if !defined(GDISP_FONT_FOUND) && defined(GFX_USE_GDISP) && GFX_USE_GDISP
 #error "GDISP: No fonts have been included"
 #endif

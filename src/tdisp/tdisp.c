@@ -38,16 +38,12 @@
 
 #endif
 
-bool_t tdispInit(void) {
-	bool_t		res;
-
+void _tdispInit(void) {
 	MUTEX_INIT();
 
 	MUTEX_ENTER();
-	res = tdisp_lld_init();
+	tdisp_lld_init();
 	MUTEX_LEAVE();
-
-	return res;
 }
 
 void tdispClear(void) {

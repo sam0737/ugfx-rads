@@ -15,8 +15,6 @@
 
 #include "gfx.h"
 
-void DEPRECATED("Use gfxInit() instead") gdispInit() { gfxInit(); }
-
 /* These init functions are defined by each module but not published */
 extern void _gosInit(void);
 #if GFX_USE_GDISP

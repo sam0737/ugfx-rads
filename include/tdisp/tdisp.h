@@ -121,17 +121,6 @@ extern "C" {
 #endif
 
 /**
- * @brief	TDISP driver initialisation
- * @note	This function is not implicitly invoked by @p halInit().
- *			It must be called manually.
- *
- * @return	TRUE if success, FALSE otherwise
- *
- * @init
- */
-bool_t tdispInit(void);
-
-/**
  * @brief		Clears the display
  * 
  * @details		The display gets cleared and the cursor is set in the home position ( 0, 0 )

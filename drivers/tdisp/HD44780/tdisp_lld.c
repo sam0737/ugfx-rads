@@ -55,68 +55,59 @@ tdispStruct	TDISP = {
 static uint8_t	displaycontrol;
 static uint8_t	cursorcontrol;
 
-bool_t tdisp_lld_init(void) { 
-	/* initialise hardware */
-	init_board();
-	
-	/* The first part is the initialing code.
-	 * In this part only the lower nibble of the
-	 * byte is written directly to the display, thus
-	 * without write_cmd, which sends both high and
-	 * low nibble.
-	 */
-	
-	/* Give the LCD a little time to wake up */
-	gfxSleepMilliseconds(15);
-	
-	/* clear the RS-line to the display */
-	palClearPad(PORT_CTRL, PIN_RS);
-// 	#if BUS_4BITS
-		/* write three times 0x03 to display (4-bit mode only)
-		* with RS = low.
-		*/
-		writeToLCD(0x03); // 1x
-		gfxSleepMilliseconds(20);
-		writeToLCD(0x03); // 2x
-// 		gfxSleepMilliseconds(20);
-		writeToLCD(0x03); // 3x
-// 		gfxSleepMilliseconds(20);
-		/* Put display in 4-bit mode by
-		* write 0x02 to display.
-		*/
-		writeToLCD(0x02); // 4bit-modus
-// 		gfxSleepMilliseconds(20);
-// 	#else
-		/* write three times 0x30 to display (8-bit mode only)
-		* with RS = low.
-		*/
-// 		writeToLCD(0x30); // 1x
-// 		writeToLCD(0x30); // 2x
-// 		writeToLCD(0x30); // 3x
-// 	#endif	
+void tdisp_lld_init(void) {
+  /* initialise hardware */
+  init_board();
 
-	/* From this point on, the LCD accepts
-	 * bytes sent with highnibbel first and than
-	 *the lownibble if working in 4-bit mode.
-	 * In 8-bit mode bytes are written in 1 action.
-	 */
-	
-	/* 4-bit modus, 2 lines en 5x7 characters */
-	write_cmd(0x28);
-// 	gfxSleepMilliseconds(20);
-	
-	/* set display on, cursor off and no blinking */
-	write_cmd(0x0C);
-// 	gfxSleepMilliseconds(20);
-	/* set cursor increase and direction */
-	write_cmd(0x06);
-// 	gfxSleepMilliseconds(20);
-	
-	displaycontrol = TDISP_DISPLAY_ON;
-	cursorcontrol = TDISP_CURSOR_INC;
-	/* END OF INITIALISATION */
+  /* The first part is the initialing code.
+   * In this part only the lower nibble of the
+   * byte is written directly to the display, thus
+   * without write_cmd, which sends both high and
+   * low nibble.
+   */
 
-	return TRUE;
+  /* Give the LCD a little time to wake up */
+  gfxSleepMilliseconds(40);
+
+  /* clear the RS-line to the display */
+  palClearPad(PORT_CTRL, PIN_RS);
+
+  // Initialize with function set command
+  //   0x33 (8-bit interface)
+  //   two 0x30 (4-bit interface)
+
+  // 8-bit interface mode
+  write_cmd(0x33); // 1x
+  gfxSleepMilliseconds(20);
+  write_cmd(0x33); // 2x
+  gfxSleepMilliseconds(5);
+  write_cmd(0x33); // 3x
+
+ 	#if BUS_4BITS
+    /* Put display in 4-bit mode by writing
+     * 0x10 (Cusor/Display shift as no-op)
+     * 0x20 (Function set command)
+     * write 0x02 to display.
+     */
+    write_cmd(0x12);
+
+    // Now in 4-bit interface
+    /* 4-bit mode, 2 lines and 5x8 characters */
+    write_cmd(0x28);
+ 	#else
+    /* 8-bit mode, 2 lines and 5x8 characters */
+    write_cmd(0x38);
+  #endif
+
+  /* set display on, cursor off and no blinking */
+  write_cmd(0x0C);
+
+  /* set cursor increase and direction */
+  write_cmd(0x06);
+
+  displaycontrol = TDISP_DISPLAY_ON;
+  cursorcontrol = TDISP_CURSOR_INC;
+  /* END OF INITIALISATION */
 }
 
 /* Clears the display. The display needs
@@ -124,120 +115,106 @@ bool_t tdisp_lld_init(void) {
  * an extra delay is insterted.
  */
 void tdisp_lld_clear(void) {
-	write_cmd(0x01);
+  write_cmd(0x01);
+  gfxSleepMilliseconds(2);
 }
 
 /* Writes a character to the display */
 void tdisp_lld_draw_char(char c) {
-	write_data(c);
+  write_data(c);
 }
 
 /* Set cursor position */
 void tdisp_lld_set_cursor(coord_t col, coord_t row) {
-	static const uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
-
-	/*
-	 *  Short-cut:
-	 *
-	 *  If x and y = 0 then use the home command.
-	 *
-	 *  Note: There is probably no advantage as both commands are a single byte
-	 */
-//	if (col == 0 && row == 0) {
-//		write_cmd(0x02);
-//		return;
-//	}
-
-	write_cmd(0x80 | (col + row_offsets[row]));
-// 	write_cmd(0x80 | (0x40 + col));
+  static const uint8_t row_offsets[] = {0x00, 0x40, 0x14, 0x54};
+  write_cmd(0x80 | (col + row_offsets[row]));
 }
 
 /* Create a custom character to the display */
 void tdisp_lld_create_char(uint8_t address, uint8_t *charmap) {
-	int i;
+  int i;
 
-	write_cmd(0x40 | (address << 3));
-	for(i = 0; i < CUSTOM_CHAR_YBITS; i++) {
-		write_data(charmap[i]);
-	}
-
+  write_cmd(0x40 | (address << 3));
+  for(i = 0; i < CUSTOM_CHAR_YBITS; i++) {
+    write_data(charmap[i]);
+  }
 }
 
 /* Write display control commands to the display */
 void tdisp_lld_control(uint16_t what, uint16_t value) {
-	switch(what) {
-		      case TDISP_CTRL_DISPLAY:
-				switch (value) {
-					case displayOff:
-						displaycontrol &= ~TDISP_DISPLAY_ON;
-						break;
-					case displayOn:
-						displaycontrol |= TDISP_DISPLAY_ON;
-						break;
-				}
-				write_cmd(0x08 | displaycontrol);
-				break;
-		      case TDISP_CTRL_CURSOR:
-				switch (value) {
-					case cursorBlinkingBlock:
-					case cursorBlinkingUnderline:
-					case cursorBlinkingBar:
-						displaycontrol |= TDISP_CURSOR_ON + TDISP_CURSOR_BLINK;
-						break;
-					case cursorBlock:
-					case cursorUnderline:
-					case cursorBar:
-						displaycontrol = (displaycontrol | TDISP_CURSOR_ON) & ~TDISP_CURSOR_BLINK;
-						break;
-					case cursorOff:
-					default:
-						displaycontrol &= ~(TDISP_CURSOR_ON | TDISP_CURSOR_BLINK); // zet alleen de cursor uit. Bewaar de overige instellingen
-						break;
-				}
-				write_cmd(0x08 | displaycontrol);
-				break;
-			case TDISP_CTRL_MOVE:
-				switch (value) {
-					case cursorIncrease:
-						cursorcontrol |= TDISP_CURSOR_INC; // increase cursor position
-						break;
-					case cursorDecrease:
-						cursorcontrol &= ~TDISP_CURSOR_INC; // decrease cursor position
-						break;
-				}
-				write_cmd(0x04 | cursorcontrol);
-				break;
-			case TDISP_CTRL_SHIFT:
-				switch (value) {
-					case shiftOn:
-						cursorcontrol |= TDISP_SHIFT_ON;
-						break;
-					case shiftOff:
-						cursorcontrol &= ~TDISP_SHIFT_ON;
-						break;
-				}
-				write_cmd(0x04 | cursorcontrol);
-				break;
-	}
+  switch(what) {
+    case TDISP_CTRL_DISPLAY:
+    switch (value) {
+      case displayOff:
+      displaycontrol &= ~TDISP_DISPLAY_ON;
+      break;
+      case displayOn:
+      displaycontrol |= TDISP_DISPLAY_ON;
+      break;
+    }
+    write_cmd(0x08 | displaycontrol);
+    break;
+    case TDISP_CTRL_CURSOR:
+    switch (value) {
+      case cursorBlinkingBlock:
+      case cursorBlinkingUnderline:
+      case cursorBlinkingBar:
+      displaycontrol |= TDISP_CURSOR_ON + TDISP_CURSOR_BLINK;
+      break;
+      case cursorBlock:
+      case cursorUnderline:
+      case cursorBar:
+      displaycontrol = (displaycontrol | TDISP_CURSOR_ON) & ~TDISP_CURSOR_BLINK;
+      break;
+      case cursorOff:
+      default:
+      displaycontrol &= ~(TDISP_CURSOR_ON | TDISP_CURSOR_BLINK); // zet alleen de cursor uit. Bewaar de overige instellingen
+      break;
+    }
+    write_cmd(0x08 | displaycontrol);
+    break;
+    case TDISP_CTRL_MOVE:
+    switch (value) {
+      case cursorIncrease:
+      cursorcontrol |= TDISP_CURSOR_INC; // increase cursor position
+      break;
+      case cursorDecrease:
+      cursorcontrol &= ~TDISP_CURSOR_INC;// decrease cursor position
+      break;
+    }
+    write_cmd(0x04 | cursorcontrol);
+    break;
+    case TDISP_CTRL_SHIFT:
+    switch (value) {
+      case shiftOn:
+      cursorcontrol |= TDISP_SHIFT_ON;
+      break;
+      case shiftOff:
+      cursorcontrol &= ~TDISP_SHIFT_ON;
+      break;
+    }
+    write_cmd(0x04 | cursorcontrol);
+    break;
+  }
 }
 
 /* Scrolls the display in a particular direction with an amount of characters and delays the scroll between each scroll step */
 void tdisp_lld_scroll(uint16_t direction, uint16_t amount, uint16_t delay) {
   uint16_t scrollcontrol = 0;
   uint16_t i;
-  
+
   switch (direction) {
     case displayScrollLeft:
-      scrollcontrol = TDISP_SCROLL_DISPLAY;
-      break;
+    scrollcontrol = TDISP_SCROLL_DISPLAY;
+    break;
     case displayScrollRight:
-      scrollcontrol = TDISP_SCROLL_DISPLAY | TDISP_SCROLL_RIGHT;
-      break;
+    scrollcontrol = TDISP_SCROLL_DISPLAY | TDISP_SCROLL_RIGHT;
+    break;
   }
-  
+
   for(i = 0; i < amount; i++) {
     write_cmd(0x10 | scrollcontrol);
-    gfxSleepMilliseconds(delay);	
+    gfxSleepMilliseconds(delay);
   }
 }
 

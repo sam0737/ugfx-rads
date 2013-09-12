@@ -214,10 +214,6 @@ extern "C" {
 	 * @api
 	 */
 	void gfxInit(void);
-
-	/* Compatibility for old programs */
-	void DEPRECATED("Use gfxInit() instead") gdispInit(void);
-
 #ifdef __cplusplus
 }
 #endif

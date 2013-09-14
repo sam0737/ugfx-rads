@@ -125,7 +125,7 @@ bool_t gdisp_lld_init(void) {
 
   write_cmd(ST7565_LCD_BIAS_7);
   write_cmd(ST7565_ADC_NORMAL);
-  write_cmd(ST7565_COM_SCAN_INC);
+  write_cmd(ST7565_COM_SCAN_DEC);
   set_display_start_line(0);
 
   set_contrast(32);

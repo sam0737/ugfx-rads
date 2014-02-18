@@ -1,7 +1,7 @@
 GFXSRC +=   $(GFXLIB)/src/gwin/gwin.c \
 			$(GFXLIB)/src/gwin/gwidget.c \
 			$(GFXLIB)/src/gwin/gwm.c \
-			$(GFXLIB)/src/gwin/console.c \
+			$(GFXLIB)/src/gwin/gwin_console.c \
 			$(GFXLIB)/src/gwin/graph.c \
 			$(GFXLIB)/src/gwin/button.c \
 			$(GFXLIB)/src/gwin/slider.c \

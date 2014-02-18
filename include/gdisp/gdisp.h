@@ -699,6 +699,22 @@ void gdispDrawBox(coord_t x, coord_t y, coord_t cx, coord_t cy, color_t color);
 	void gdispFillStringBox(coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgColor, justify_t justify);
 
 	/**
+	   * @brief   Draw a text string vertically centered within the specified box with offset. The box background is filled with the specified background color.
+	   * @note    The entire box is filled
+	   *
+	   * @param[in] x,y   The position for the text (need to define top-right or base-line - check code)
+     * @param[in] cx,cy   The width and height of the box
+     * @param[in] x_offest   The x offset of the text.
+	   * @param[in] str   The string to draw
+	   * @param[in] font    The font to use
+	   * @param[in] color   The color to use
+	   * @param[in] bgColor The background color to use
+	   *
+	   * @api
+	   */
+	void gdispFillStringBoxWithOffset(coord_t x, coord_t y, coord_t cx, coord_t cy, coord_t x_offset, const char* str, font_t font, color_t color, color_t bgcolor);
+
+	/**
 	 * @brief   Get a metric of a font.
 	 * @return  The metric requested in pixels.
 	 *

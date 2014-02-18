@@ -93,8 +93,9 @@ typedef enum displayscrollmode_e {
 #define TDISP_CTRL_DISPLAY		0x0000
 #define TDISP_CTRL_CURSOR		0x0001
 #define TDISP_CTRL_MOVE			0x0002
-#define TDISP_CTRL_SHIFT		0x0003
+#define TDISP_CTRL_SHIFT    0x0003
 // #define TDISP_CTRL_SCROLL		0x0004
+#define TDISP_CONTROL_LLD    0x1000
 
 /** @} */
 

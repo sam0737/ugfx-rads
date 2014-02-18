@@ -81,7 +81,7 @@ static void set_display_start_line(unsigned char value) {
   write_cmd(ST7565_START_LINE | value);
 }
 
-static void gdisp_lld_display(void) {
+static void flush_display(void) {
   uint8_t p;
   set_display_start_line(0);
 
@@ -146,7 +146,7 @@ bool_t gdisp_lld_init(void) {
   invert_display(0);// Disable Inversion of display.
 
   write_cmd(ST7565_RMW);
-  gdisp_lld_display();
+  flush_display();
 
   // Initialize the GDISP structure
   GDISP.Width = GDISP_SCREEN_WIDTH;
@@ -258,7 +258,7 @@ void gdisp_lld_control(unsigned what, void *value) {
       return;
 
     case GDISP_CONTROL_LLD_FLUSH:
-      gdisp_lld_display();
+      flush_display();
       return;
   }
 }

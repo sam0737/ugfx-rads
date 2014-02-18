@@ -681,6 +681,7 @@ void gdispDrawBox(coord_t x, coord_t y, coord_t cx, coord_t cy, color_t color) {
 		color_t color[2];
 		coord_t	x, y;
 		coord_t	cx, cy;
+		coord_t x_offset;
 	} gdispFillString_state_t;
 
 	/* Callback to render characters. */
@@ -770,6 +771,28 @@ void gdispDrawBox(coord_t x, coord_t y, coord_t cx, coord_t cy, color_t color) {
 		/* Render */
 		mf_render_aligned(font, x, y, justify, str, 0, gdispFillString_callback, &state);
 	}
+
+  void gdispFillStringBoxWithOffset(coord_t x, coord_t y, coord_t cx, coord_t cy, coord_t x_offset, const char* str, font_t font, color_t color, color_t bgcolor) {
+    /* No mutex required as we only call high level functions which have their own mutex */
+    gdispFillString_state_t state;
+
+    state.font = font;
+    state.color[0] = color;
+    state.color[1] = bgcolor;
+    state.x = x;
+    state.y = y;
+    state.cx = cx;
+    state.cy = cy;
+    state.x_offset = x_offset;
+
+    gdispFillArea(x, y, cx, cy, bgcolor);
+
+    x += font->baseline_x + x_offset;
+    y += (cy+1 - font->height)/2;
+
+    /* Render */
+    mf_render_aligned(font, x, y, justifyLeft, str, 0, gdispFillString_callback, &state);
+  }
 
 	coord_t gdispGetFontMetric(font_t font, fontmetric_t metric) {
 		/* No mutex required as we only read static data */

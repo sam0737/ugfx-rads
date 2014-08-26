@@ -233,15 +233,13 @@ void gdisp_lld_draw_pixel(coord_t x, coord_t y, color_t color) {
 					return;
 				switch((gdisp_powermode_t)value) {
 					case powerOff:
+          case powerSleep:
+          case powerDeepSleep:
+            lld_lcdWriteCommand(ILI9341_CMD_ENTER_SLEEP_MODE);
 						break;
 			
 					case powerOn:
-						break;
-	
-					case powerSleep:
-						break;
-
-					case powerDeepSleep:
+            lld_lcdWriteCommand(ILI9341_CMD_SLEEP_OUT);
 						break;
 
 					default:
